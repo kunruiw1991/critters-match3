@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="description" content="Critter Pop (萌宠开心消消乐): Smiling Critters Match-3 puzzle game inspired by 开心消消乐 (Anipop), featuring 8 Vine Tree levels, Line Blasts, 3x3 Bombs, CraftyCorn Magic Birds, Ice & Honey targets, and Unlimited Casual Mode!" />
+  <title>Critter Pop · 萌宠开心消消乐</title>
+  <link rel="icon" type="image/jpeg" href="icons/dogday.jpg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700;800&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=1" />
+</head>
+<body>
+  <div id="app">
+    <!-- TOP VINE TREE HUD BAR -->
+    <header id="topBar">
+      <div class="brand-box">
+        <img id="topHostAvatar" class="brand-avatar" src="icons/dogday.jpg" alt="Level Host Critter" />
+        <div class="brand-titles">
+          <h1 id="topLevelTitle">LV.1 阳光初芽 · Sunlit Sprout</h1>
+          <span id="topLevelSub">Match 3+ Critter Heads! 4 = ⚡ Line Blast · 5 = 🌈 Magic Bird!</span>
+        </div>
+      </div>
+
+      <div class="hud-stats">
+        <div class="stat-pill" title="Remaining Moves (Auto-refills +10 in Casual Mode! · 步数用完免费自动续步)">
+          <span>👣</span>
+          <span class="lbl">步数</span>
+          <b id="movesCount">30</b>
+        </div>
+        <div class="stat-pill" title="Current Score">
+          <span>⭐</span>
+          <span class="lbl">分数</span>
+          <b id="scoreCount">0</b>
+        </div>
+        <div class="stat-pill" title="Best Score">
+          <span>🏆</span>
+          <span class="lbl">最高</span>
+          <b id="highScoreCount">0</b>
+        </div>
+        <div class="stat-pill" title="Current Cascade Combo">
+          <span>🔥</span>
+          <span class="lbl">连击</span>
+          <b id="comboCount">x1</b>
+        </div>
+      </div>
+
+      <div class="hud-actions">
+        <button id="hintBtn" class="toy-btn mint" title="Show Best Move Hint · 智能提示">
+          💡 <span>提示 · Hint</span>
+        </button>
+        <button id="saveGameBtn" class="toy-btn icon-btn" title="Save Progress · 保存进度">💾</button>
+        <button id="openMapBtn" class="toy-btn icon-btn" title="Vine Tree Level Map · 藤蔓大树选关">🌳</button>
+        <button id="musicBtn" class="toy-btn icon-btn" title="Toggle Music · 音乐">🎵</button>
+        <button id="sfxBtn" class="toy-btn icon-btn" title="Toggle Sound · 音效">🔊</button>
+      </div>
+    </header>
+
+    <!-- 8-LEVEL VINE TREE SELECTOR STRIP -->
+    <nav id="levelStrip" aria-label="Vine Tree Level Selector"></nav>
+
+    <!-- MAIN WORKSPACE: 8x8 CRYSTAL BOARD + RIGHT DOCK -->
+    <main id="gameWorkspace">
+      <div id="stageContainer">
+        <canvas id="matchCanvas" width="576" height="576"></canvas>
+        <div id="comboBanner" class="hidden">🌟 EXCELLENT! · 精彩绝伦!</div>
+      </div>
+
+      <aside id="sideDock">
+        <!-- 1. MISSION TARGETS & 3-STAR PROGRESS CARD -->
+        <div class="dock-card">
+          <div class="card-header-row">
+            <div class="host-badge">
+              <img id="dockHostImg" src="icons/dogday.jpg" alt="Host" />
+              <div>
+                <h2 id="dockHostName">DogDay · 日犬</h2>
+                <span id="dockLevelTag" class="sub-tag">藤蔓第 1 关 · ♾️ 轻松不败模式</span>
+              </div>
+            </div>
+            <div id="starDisplay" class="star-row" title="3-Star Progress">☆☆☆</div>
+          </div>
+
+          <div class="star-bar-wrap">
+            <div id="starBarFill" class="star-bar-fill"></div>
+          </div>
+
+          <div class="section-label">🎯 本关消除目标 · Level Targets</div>
+          <div id="goalList" class="goal-grid"></div>
+        </div>
+
+        <!-- 2. FOUR FREE MAGIC BOOSTERS (开心消消乐四大免费道具) -->
+        <div class="dock-card">
+          <div class="section-label">🪄 免费魔法道具 · Free Boosters (Unlimited!)</div>
+          <div class="booster-grid">
+            <button id="toolHammerBtn" class="booster-btn" data-tool="hammer" title="Click any tile or ice block to smash it!">
+              <span class="b-icon">🔨</span>
+              <div class="b-meta">
+                <b>小木槌 · Hammer</b>
+                <span>敲碎任意1格/冰块</span>
+              </div>
+            </button>
+            <button id="toolWandBtn" class="booster-btn" data-tool="wand" title="Click any Critter to clear ALL of that color!">
+              <span class="b-icon">🌈</span>
+              <div class="b-meta">
+                <b>魔力棒 · Color Clear</b>
+                <span>点击消除全屏同色</span>
+              </div>
+            </button>
+            <button id="toolBombPackBtn" class="booster-btn" title="Instantly spawn a Line Blast + 3x3 Bomb on the board!">
+              <span class="b-icon">💣</span>
+              <div class="b-meta">
+                <b>特效包 · Spawn Bombs</b>
+                <span>直接送直线+爆炸特效</span>
+              </div>
+            </button>
+            <button id="toolShuffleBtn" class="booster-btn" title="Shuffle the board and add +5 bonus moves!">
+              <span class="b-icon">🔀</span>
+              <div class="b-meta">
+                <b>洗牌+5步 · Shuffle</b>
+                <span>重排棋盘并免费+5步</span>
+              </div>
+            </button>
+          </div>
+          <div id="activeToolHint" class="tool-hint">
+            👆 拖拽或点击相邻两只萌宠交换 · 双击特效头像可直接引爆！
+          </div>
+        </div>
+
+        <!-- 3. ANIPOP SPECIAL COMBO GUIDE (开心消消乐特效图鉴) -->
+        <div class="dock-card">
+          <div class="section-label">✨ 开心消消乐特效图鉴 · Special Combos</div>
+          <div class="legend-list">
+            <div class="legend-item"><span>⚡ 四连直线</span><b>整行 / 整列激光清屏</b></div>
+            <div class="legend-item"><span>💣 T/L型五连</span><b>3×3 范围大爆炸</b></div>
+            <div class="legend-item"><span>🌈 五连魔力鸟</span><b>交换任意萌宠全屏同色消</b></div>
+            <div class="legend-item"><span>🔥 双特效交换</span><b>全屏超华丽大招清场!</b></div>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- VINE TREE MAP & SAVE/LOAD MODAL -->
+    <div id="vineMapModal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <h2 class="modal-title">🌳 CRITTER POP · 萌宠开心消消乐藤蔓大树</h2>
+        <p class="modal-sub">
+          Climb the 8-Level Giant Vine Tree! Match 3, 4, or 5 Smiling Critter Heads to trigger Line Lasers, 3x3 Bombs, and CraftyCorn Magic Birds! · 攀登八层魔法藤蔓大树！
+        </p>
+
+        <div id="menuSaveStatus" class="save-status-box">
+          📂 Checking saved progress... · 正在读取藤蔓存档...
+        </div>
+
+        <div class="menu-controls-row">
+          <button id="menuNewGameBtn" class="toy-btn">🌟 New Climb (Lv.1) · 从第1关开始</button>
+          <button id="menuLoadGameBtn" class="toy-btn mint">📂 Load Save · 读取存档</button>
+          <button id="menuResumeBtn" class="toy-btn sky">▶️ Resume · 继续消除</button>
+        </div>
+
+        <div style="font-size:13px; font-weight:900; color:#2d6a4f;">
+          🌿 选择藤蔓关卡 · Choose Any Vine Tree Level (1–8):
+        </div>
+        <div id="vineLevelGrid" class="chapter-grid"></div>
+      </div>
+    </div>
+
+    <!-- LEVEL CLEAR CELEBRATION MODAL -->
+    <div id="resultModal" class="modal-backdrop hidden">
+      <div class="modal-card" style="max-width: 540px;">
+        <div style="display:flex; justify-content:center; align-items:center; gap:14px;">
+          <img id="resultHostImg" src="icons/dogday.jpg" alt="Host" style="width:74px; height:74px; border-radius:50%; border:4px solid #ff9f1c; object-fit:cover;" />
+          <span id="resultStarsBig" style="font-size:34px; font-weight:900; color:#ff9f1c;">⭐⭐⭐</span>
+          <img id="resultNextHostImg" src="icons/bubba.jpg" alt="Next Host" style="width:74px; height:74px; border-radius:50%; border:4px solid #20c997; object-fit:cover;" />
+        </div>
+        <h2 id="resultTitle" class="modal-title">🎉 UNBELIEVABLE! 本关完美消除通关！</h2>
+        <p id="resultSub" class="modal-sub">All level targets completed atop the Magic Vine!</p>
+        <div id="resultStatsBox" class="save-status-box"></div>
+        <div class="menu-controls-row">
+          <button id="resultNextBtn" class="toy-btn mint">▶️ Next Level · 攀登下一关</button>
+          <button id="resultReplayBtn" class="toy-btn">🔄 Replay · 重玩本关</button>
+          <button id="resultMapBtn" class="toy-btn sky">🌳 Vine Tree Map · 藤蔓地图</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/app.js?v=1"></script>
+</body>
+</html>
